@@ -1,4 +1,4 @@
-````markdown
+
 # Karbonbike SOC Lab – Sample Attack Chains & Detections
 
 This document describes **example attack paths** you can run from **Kali** against
