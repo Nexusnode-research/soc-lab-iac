@@ -1,4 +1,4 @@
-````markdown
+
 # Karbonbike SOC Lab – Topology & Pipelines
 
 This document describes the current state of the **Karbonbike SOC Lab** running on VMware Workstation.
