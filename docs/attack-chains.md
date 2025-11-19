@@ -294,5 +294,3 @@ For now, the two chains above are enough to:
 * Prove the lab pipelines work end-to-end.
 * Give you two polished demo stories for meetups, conferences, and training.
 
-```
-```
