@@ -1,0 +1,6 @@
+- name: Apply Velociraptor server configuration from repo
+  hosts: splunk
+  become: true
+
+  roles:
+    - velociraptor_server

@@ -1,0 +1,9 @@
+.vscode/
+.idea/
+*.swp
+
+# Local Ansible inventory (lab-specific, not for reuse)
+ansible/inventory.ini
+
+# Local archives
+*.zip

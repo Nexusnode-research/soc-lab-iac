@@ -1,0 +1,6 @@
+- name: Apply Fleet server configuration from repo
+  hosts: splunk
+  become: true
+
+  roles:
+    - fleet_server

@@ -1,0 +1,10 @@
+- name: Deploy Suricata configuration
+  ansible.builtin.copy:
+    src: suricata.yaml
+    dest: /usr/local/etc/suricata/suricata.yaml
+    mode: "0644"
+
+- name: Restart Suricata service
+  ansible.builtin.command:
+    cmd: service suricata restart
+  changed_when: true

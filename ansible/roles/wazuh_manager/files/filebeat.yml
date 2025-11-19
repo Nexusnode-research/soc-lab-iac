@@ -1,0 +1,10 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/ossec/logs/alerts/alerts.json
+  json.keys_under_root: true
+  json.add_error_key: true
+
+output.logstash:
+  hosts: ["172.16.58.134:5044"]   # your Splunk VM’s Logstash beats port

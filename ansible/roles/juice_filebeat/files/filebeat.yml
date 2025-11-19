@@ -1,0 +1,24 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/juiceshop/*.log
+      - /home/*/.pm2/logs/*juiceshop*-out.log
+      - /home/*/.pm2/logs/*juiceshop*-error.log
+    exclude_files: ['\.gz$']
+    # Optional: keep Node/stacktraces together
+    multiline.pattern: '^\s'
+    multiline.match: after
+
+    fields:
+      sourcetype: "juiceshop:app"
+      app: "juiceshop"
+      index: "wazuh"   # reuse your current HEC token’s index
+    fields_under_root: true
+    scan_frequency: 5s
+    ignore_older: 72h
+    clean_removed: true
+    close_inactive: 5m
+
+output.logstash:
+  hosts: ["172.16.58.134:5044"]   # your Splunk/Logstash box

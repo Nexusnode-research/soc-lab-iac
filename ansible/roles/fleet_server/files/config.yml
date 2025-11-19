@@ -1,0 +1,26 @@
+server:
+  address: 0.0.0.0:8412
+  tls: true
+  cert: /etc/fleet/tls/server.crt
+  key:  /etc/fleet/tls/server.key
+
+logging:
+  json: true
+  result:
+    plugin: filesystem
+    filesystem:
+      filename: /var/log/fleet/osquery_result.log
+  status:
+    plugin: filesystem
+    filesystem:
+      filename: /var/log/fleet/osquery_status.log
+
+mysql:
+  protocol: tcp
+  address: 127.0.0.1:3306
+  username: fleet
+  password: MgdQIo3ID1JHmiuRa9pNd+WizFf1ZcHs
+  database: fleet
+
+features:
+  enable_analytics: false

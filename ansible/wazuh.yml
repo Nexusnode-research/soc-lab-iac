@@ -1,0 +1,8 @@
+- name: Apply Wazuh manager + Filebeat configuration from repo
+  hosts: wazuh
+  become: true
+  become_user: root
+  gather_facts: false
+
+  roles:
+    - wazuh_manager

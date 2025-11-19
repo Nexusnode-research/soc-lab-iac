@@ -1,0 +1,8 @@
+- name: Apply Juice Shop Filebeat configuration from repo
+  hosts: juice
+  become: true
+  become_user: root
+  gather_facts: false
+
+  roles:
+    - juice_filebeat

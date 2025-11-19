@@ -1,0 +1,17 @@
+- name: Ensure Juice Shop log directory exists
+  ansible.builtin.file:
+    path: /var/log/juiceshop
+    state: directory
+    mode: "0755"
+
+- name: Deploy Filebeat config for Juice Shop
+  ansible.builtin.copy:
+    src: filebeat.yml
+    dest: /etc/filebeat/filebeat.yml
+    mode: "0644"
+
+- name: Restart Filebeat for Juice Shop logs
+  ansible.builtin.service:
+    name: filebeat
+    state: restarted
+    enabled: true

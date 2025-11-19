@@ -1,0 +1,10 @@
+- name: Copy Splunk system/local configs from repo
+  ansible.builtin.copy:
+    src: system/local/
+    dest: /opt/splunk/etc/system/local/
+    owner: splunk
+    group: splunk
+    mode: "0644"
+
+- name: Restart Splunk
+  ansible.builtin.command: /opt/splunk/bin/splunk restart

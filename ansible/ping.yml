@@ -1,0 +1,8 @@
+- name: Test connectivity to Karbonbike Linux hosts
+  hosts: linux
+  gather_facts: no
+  become: false
+
+  tasks:
+    - name: Run uptime to confirm SSH reachability
+      ansible.builtin.command: uptime

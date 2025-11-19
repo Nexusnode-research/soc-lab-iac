@@ -1,0 +1,9 @@
+- name: Apply OPNsense logging config (Zenarmor + Suricata) → Splunk
+  hosts: opnsense
+  become: true
+  become_user: root
+  gather_facts: false
+
+  roles:
+    - opnsense_syslog
+    - opnsense_suricata

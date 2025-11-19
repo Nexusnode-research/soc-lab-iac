@@ -1,0 +1,24 @@
+- name: Ensure Fleet config directory exists
+  file:
+    path: /etc/fleet
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Deploy Fleet server configuration
+  copy:
+    src: config.yml
+    dest: /etc/fleet/config.yml
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+
+- name: Restart Fleet service
+  service:
+    name: fleet
+    state: restarted
+    enabled: true
+  become: true

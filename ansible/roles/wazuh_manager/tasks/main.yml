@@ -1,0 +1,24 @@
+- name: Deploy Wazuh manager ossec.conf
+  ansible.builtin.copy:
+    src: ossec.conf
+    dest: /var/ossec/etc/ossec.conf
+    mode: "0644"
+
+- name: Deploy Filebeat config for Wazuh manager
+  ansible.builtin.copy:
+    src: filebeat.yml
+    dest: /etc/filebeat/filebeat.yml
+    mode: "0644"
+
+- name: Restart Wazuh manager service
+  ansible.builtin.service:
+    name: wazuh-manager
+    state: restarted
+    enabled: true
+
+- name: Restart Filebeat service
+  ansible.builtin.service:
+    name: filebeat
+    state: restarted
+    enabled: true
+

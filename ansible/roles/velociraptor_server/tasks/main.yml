@@ -1,0 +1,25 @@
+- name: Ensure Velociraptor config directory exists
+  file:
+    path: /etc/velociraptor
+    state: directory
+    owner: root
+    group: root
+    mode: '0750'
+
+- name: Deploy Velociraptor server.config.yaml
+  copy:
+    src: server.config.yaml
+    dest: /etc/velociraptor/server.config.yaml
+    owner: root
+    group: root
+    mode: '0640'
+  notify: Restart Velociraptor server
+
+- name: Deploy Velociraptor client.config.yaml
+  copy:
+    src: client.config.yaml
+    dest: /etc/velociraptor/client.config.yaml
+    owner: root
+    group: root
+    mode: '0640'
+  notify: Restart Velociraptor server

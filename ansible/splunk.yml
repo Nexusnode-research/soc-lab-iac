@@ -1,0 +1,8 @@
+- name: Apply Splunk server configuration from repo
+  hosts: splunk
+  become: true
+  become_user: root
+  gather_facts: false
+
+  roles:
+    - splunk_server

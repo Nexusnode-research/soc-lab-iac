@@ -1,0 +1,6 @@
+- name: Restart Velociraptor server
+  become: true
+  ansible.builtin.systemd:
+    name: velociraptor_server
+    state: restarted
+    enabled: true

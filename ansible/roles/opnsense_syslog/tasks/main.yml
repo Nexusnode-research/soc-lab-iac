@@ -1,0 +1,10 @@
+- name: Deploy Zenarmor IPDR syslog-ng config
+  ansible.builtin.copy:
+    src: zenarmor-ipdr.conf
+    dest: /usr/local/etc/syslog-ng.conf.d/zenarmor-ipdr.conf
+    mode: "0644"
+
+- name: Restart syslog-ng on OPNsense
+  ansible.builtin.command:
+    cmd: service syslog-ng restart
+  changed_when: true
