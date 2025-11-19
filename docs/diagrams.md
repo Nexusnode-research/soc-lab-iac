@@ -1,29 +1,34 @@
+
 # Karbonbike SOC Lab – Diagrams
 
 ## 1. High-level Network Topology
 
 ```mermaid
 graph LR
-    INET[Internet] --> FW[OPNsense Firewall<br/>172.16.58.2]
+  INET[Internet]
 
-    subgraph LAN[Lab Network 172.16.58.0/24]
-        DC[DC.karbonbike.local<br/>Win Server 2025 (DC)]
-        PC1[PC1.karbonbike.local<br/>Win 11]
-        PC2[PC2.karbonbike.local<br/>Win 11 (test)]
-        KALI[Kali Linux<br/>Attacker]
-        WZ[Wazuh Manager<br/>Ubuntu]
-        SPL[Splunk + Logstash + Fleet + Velociraptor<br/>Ubuntu]
-        JS[JuiceShopClone<br/>Ubuntu (OWASP Juice Shop)]
-    end
+  FW[OPNsense Firewall<br/>172.16.58.2]
 
-    FW --> DC
-    FW --> PC1
-    FW --> PC2
-    FW --> KALI
-    FW --> WZ
-    FW --> SPL
-    FW --> JS
-```
+  INET --> FW
+
+  subgraph LAN_172_16_58_0_24 ["Lab network 172.16.58.0/24"]
+    DC[DC.karbonbike.local<br/>Win Server 2025 (DC)]
+    PC1[PC1.karbonbike.local<br/>Win 11 (main)]
+    PC2[PC2.karbonbike.local<br/>Win 11 (test)]
+    WZ[Wazuh Manager<br/>Ubuntu 22.04<br/>172.16.58.137]
+    SPL[SPLUNK / Logstash / Fleet / Velociraptor<br/>Ubuntu 22.04<br/>172.16.58.134]
+    JS[JuiceShopClone<br/>OWASP Juice Shop<br/>172.16.58.133]
+    KALI[Kali attacker<br/>172.16.58.20]
+  end
+
+  FW --> DC
+  FW --> PC1
+  FW --> PC2
+  FW --> WZ
+  FW --> SPL
+  FW --> JS
+  FW --> KALI
+````
 
 ---
 
@@ -31,31 +36,51 @@ graph LR
 
 ```mermaid
 flowchart LR
-    subgraph Win[Windows Endpoints]
-        PC1[PC1<br/>Sysmon + Wazuh Agent + Orbit + Velociraptor]
-        PC2[PC2<br/>(optional test endpoint)]
-    end
+  %% Windows endpoints
+  subgraph Windows_Endpoints
+    DCW[DC.karbonbike.local<br/>Win Server 2025<br/>Wazuh + Orbit + Velociraptor]
+    PC1W[PC1.karbonbike.local<br/>Win 11 main<br/>Wazuh + Sysmon + UF + Orbit + Velociraptor]
+  end
 
-    %% Windows → Wazuh → Splunk
-    PC1 --> WA[Wazuh Agent]
-    WA --> WM[Wazuh Manager<br/>alerts.json]
-    WM --> FB1[Filebeat (Wazuh)]
-    FB1 --> LS[Logstash]
-    LS --> SPW[Splunk<br/>Index: wazuh]
+  %% Wazuh pipeline
+  DCW -->|"eventchannel logs"| WZ_MGR[Wazuh Manager<br/>172.16.58.137]
+  PC1W -->|"eventchannel logs"| WZ_MGR
 
-    %% Juice Shop → Splunk
-    JS[Juice Shop App<br/>/var/log/juiceshop/app.log] --> FB2[Filebeat (Juice)]
-    FB2 --> LS
-    LS --> SPJ[Splunk<br/>Index: juiceshop]
+  WZ_MGR -->|"/var/ossec/logs/alerts/alerts.json"| FB_WZ[Filebeat (Wazuh)]
+  FB_WZ -->|"Beats 5044"| LS[Logstash<br/>172.16.58.134]
 
-    %% OPNsense (Suricata + Zenarmor) → Splunk
-    FW[OPNsense<br/>Suricata + Zenarmor] --> SYSLOG[syslog-ng<br/>UDP 5514]
-    SYSLOG --> SPO[Splunk<br/>Index: opnsense]
+  %% Juice Shop pipeline
+  subgraph Juice_Shop
+    JSAPP[Juice Shop app<br/>172.16.58.133]
+    FB_JS[Filebeat (Juice Shop)]
+  end
 
-    %% FleetDM + Velociraptor (conceptual feeds)
-    Orbit[Fleet Orbit Agents] --> FLEET[FleetDM Server]
-    FLEET --> SPF[Splunk<br/>Index: fleetdm]
+  JSAPP -->|"/var/log/juiceshop/*.log"| FB_JS
+  FB_JS -->|"Beats 5044"| LS
 
-    VAG[Velociraptor Agents] --> VSRV[Velociraptor Server]
-    VSRV --> SPV[Splunk<br/>Index: velociraptor]
+  %% OPNsense → Splunk
+  subgraph OPNsense_Firewall
+    SUR[Suricata EVE<br/>OPNsense]
+    ZEN[Zenarmor IPDR<br/>OPNsense]
+  end
+
+  SUR -->|"syslog UDP 5514"| SPL[Splunk Enterprise<br/>172.16.58.134]
+  ZEN -->|"syslog UDP 5514"| SPL
+
+  %% Logstash → Splunk
+  LS -->|"HEC JSON 8088"| SPL
+
+  %% Fleet & Velociraptor telemetry
+  subgraph Telemetry_Controllers
+    FLEET[FleetDM<br/>HTTPS 8412]
+    VEL[Velociraptor<br/>HTTPS 8008]
+  end
+
+  DCW -->|"Orbit TLS"| FLEET
+  PC1W -->|"Orbit TLS"| FLEET
+
+  DCW -->|"Velociraptor client"| VEL
+  PC1W -->|"Velociraptor client"| VEL
 ```
+
+
