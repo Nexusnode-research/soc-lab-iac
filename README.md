@@ -33,8 +33,11 @@ Core ideas of the Karbonbike lab:
 
 This repository captures that design as **documentation + automation**, so others can understand and replay the lab.
 
-See also: [`docs/diagrams.md`](docs/diagrams.md) for Mermaid diagrams of the topology and pipelines.
+See also:
 
+- [`lab-topology.md`](lab-topology.md) – narrative topology + VM inventory.
+- [`docs/diagrams.md`](docs/diagrams.md) – Mermaid diagrams of the topology and pipelines.
+- [`docs/attack-chains.md`](docs/attack-chains.md) – worked attack chains and detections.
 
 ---
 
@@ -44,9 +47,11 @@ See also: [`docs/diagrams.md`](docs/diagrams.md) for Mermaid diagrams of the top
 soc-lab-iac/
   README.md                    ← This file
   .gitignore
+  lab-topology.md              ← Network map, VM inventory, pipelines, port matrix, log locations
 
   docs/
-    lab-topology.md            ← Network map, VM inventory, pipelines, port matrix, log locations
+    attack-chains.md           ← Kali → Juice Shop / Windows chains + detections
+    diagrams.md                ← Mermaid diagrams (topology + pipelines)
 
   ansible/
     inventory.ini              ← Ansible inventory for Linux hosts (lab-specific; not for reuse)
@@ -294,7 +299,7 @@ This project is meant to serve as a:
 For concrete examples of how Kali, Juice Shop, Windows, Wazuh, OPNsense and Splunk
 come together in practice, see:
 
-- `docs/attack-chains.md` – step-by-step attack chains + matching detections.
+* `docs/attack-chains.md` – step-by-step attack chains + matching detections.
 
 ---
 
@@ -303,6 +308,7 @@ come together in practice, see:
 Planned steps for this repository:
 
 * [x] Finalise base Ansible inventory (`ansible/inventory.ini`) and connectivity checks (`ping.yml`).
+
 * [x] Add roles for:
 
   * [x] Splunk server (system/local configs, basic inputs)
@@ -310,13 +316,14 @@ Planned steps for this repository:
   * [x] Juice Shop Filebeat (app logs shipping into Logstash → Splunk)
   * [x] OPNsense logging (Suricata + Zenarmor → Splunk syslog)
   * [x] FleetDM & Velociraptor **server configuration**
+
 * [ ] Extend roles for:
 
   * [ ] FleetDM + Velociraptor **log shipping** into Splunk (sourcetypes, indexes)
   * [ ] OPNsense → Splunk parsing (props/transforms) + saved searches
   * [ ] Splunk dashboards / detection content for key sourcetypes
-* [ ] Add diagrams (Mermaid / draw.io) for quick high-level views.
-* [ ] (Optional) Provide Vagrant / Terraform examples for non-VMware deployments.
+
+* [ ] Provide Vagrant / Terraform examples for non-VMware deployments.
 
 ---
 
@@ -326,5 +333,4 @@ Maintained by **Nexusnode**
 🌐 [https://nexusnode.co.za](https://nexusnode.co.za)
 
 For collaboration, training, or partnerships related to the Karbonbike SOC Lab or Nexusnode’s cyber range work, please reach out via the website contact channels.
-
 

@@ -1,4 +1,4 @@
-
+````markdown
 # Karbonbike SOC Lab – Topology & Pipelines
 
 This document describes the current state of the **Karbonbike SOC Lab** running on VMware Workstation.
@@ -29,16 +29,18 @@ The lab is designed as a compact **SOC + DFIR playground** with:
 
 ## 2. VM Inventory
 
-| VM Name           | Hostname               | OS / Role                                                                 | IP             |
-|-------------------|------------------------|---------------------------------------------------------------------------|----------------|
-| **OPNsense**      | opnsense.local         | OPNsense firewall + Suricata + Zenarmor                                  | 172.16.58.2    |
-| **DC**            | DC.karbonbike.local    | Windows Server 2025 – Domain Controller + Wazuh Agent                     | 172.16.58.50   |
-| **PC1**           | PC1.karbonbike.local   | Windows 11 24H2 – main workstation (Wazuh, Splunk UF, Sysmon, Fleet, Velociraptor, Atomic Red Team) | 172.16.58.61 |
-| **PC2**           | PC2.karbonbike.local   | Windows 11 (Eval) – test client                                           | 172.16.58.52   |
-| **JuiceShopClone**| juice-shop.local       | Ubuntu 20.04 – OWASP Juice Shop + Filebeat                                | 172.16.58.133  |
-| **Kali**          | kali.local             | Kali Linux – attacker tools                                               | 172.16.58.20   |
-| **Wazuh Manager** | wazuh-manager.local    | Ubuntu 22.04 – Wazuh Manager + Filebeat                                   | 172.16.58.137  |
-| **Splunk/Logstash** | splunk.local         | Ubuntu 22.04 – Splunk Enterprise + Logstash + FleetDM + Velociraptor      | 172.16.58.134  |
+| VM Name             | Hostname               | OS / Role                                                                                   | IP             |
+|---------------------|------------------------|---------------------------------------------------------------------------------------------|----------------|
+| **OPNsense**        | opnsense.local         | OPNsense firewall + Suricata + Zenarmor                                                    | 172.16.58.2    |
+| **DC**              | DC.karbonbike.local    | Windows Server 2025 – Domain Controller + Wazuh Agent                                      | 172.16.58.50   |
+| **PC1**             | PC1.karbonbike.local   | Windows 11 24H2 – main workstation (Wazuh, Splunk UF, Sysmon, Fleet, Velociraptor, Atomic) | 172.16.58.61   |
+| **PC2**             | PC2.karbonbike.local   | Windows 11 (Eval) – test client                                                            | 172.16.58.52   |
+| **JuiceShopClone**  | juice-shop.local       | Ubuntu 20.04 – OWASP Juice Shop + Filebeat                                                 | 172.16.58.133  |
+| **Kali**            | kali.local             | Kali Linux – attacker tools                                                                | 172.16.58.20   |
+| **Wazuh Manager**   | wazuh-manager.local    | Ubuntu 22.04 – Wazuh Manager + Filebeat                                                    | 172.16.58.137  |
+| **Splunk/Logstash** | splunk.local           | Ubuntu 22.04 – Splunk Enterprise + Logstash + FleetDM + Velociraptor                       | 172.16.58.134  |
+
+> Adjust IPs above if you re-address any VM; this table is the lab’s current “source of truth”.
 
 ---
 
@@ -183,11 +185,14 @@ output.elasticsearch:
 
 ### 4.2 Logstash → Splunk HEC RAW
 
-* For paths under `/var/log/juiceshop/`, events are sent to:
+For paths under `/var/log/juiceshop/`, events are sent to:
 
-  * `http://127.0.0.1:8088/services/collector/raw`
-  * With a dedicated **Juice Shop HEC token**
-  * Defaults in Splunk: `sourcetype=juiceshop:app`, `index=wazuh` (lab choice)
+* `http://127.0.0.1:8088/services/collector/raw`
+* With a dedicated **Juice Shop HEC token**
+* Defaults in Splunk (in this lab):
+
+  * `sourcetype=juiceshop:app`
+  * `index=wazuh`
 
 ---
 
@@ -207,7 +212,7 @@ On Splunk:
 * UDP input on `5514`
 * Props/transforms:
 
-  * Strip syslog preamble (preamble → JSON)
+  * Strip syslog preamble (leave raw JSON)
   * `sourcetype=suricata`
   * `KV_MODE=json`
 
@@ -215,11 +220,12 @@ On Splunk:
 
 * `syslog-ng` tails Zenarmor IPDR files, prefixes with `zenarmor:`
 * Sends to `172.16.58.134:5514/udp`
-* Splunk:
 
-  * `sourcetype=zenarmor`
-  * Strips prefix and parses JSON
-  * Drops `{"index":{}}` noise lines
+On Splunk:
+
+* `sourcetype=zenarmor`
+* Strip `zenarmor:` prefix and parse JSON
+* Drop `{"index":{}}` noise lines
 
 ---
 
@@ -228,12 +234,13 @@ On Splunk:
 * Fleet server runs on the Splunk node:
   `https://172.16.58.134:8412` (self-signed)
 * Backed by MySQL + Redis.
-* Orbit/osquery agents installed on hosts like PC1 & DC, enrolled into Fleet.
-* Used for:
+* Orbit/osquery agents installed on hosts like **PC1** and **DC**, enrolled into Fleet.
 
-  * Live queries
-  * Baseline visibility
-  * Future policies / scheduled queries
+Used for:
+
+* Live queries
+* Baseline visibility
+* Future policies / scheduled queries
 
 ---
 
@@ -244,31 +251,32 @@ On Splunk:
 * Service: `velociraptor_server`
 * Frontend: `https://172.16.58.134:8008` (self-signed)
 
-Enrolled endpoints include:
+Enrolled endpoints include at least:
 
-* DC, PC1, PC2, JuiceShopClone, Splunk server.
+* DC, PC1, PC2, Splunk server
+  (JuiceShopClone and others can be added as needed.)
 
 Used for:
 
 * VFS browsing
 * File collection
-* Basic forensic artefacts
+* Basic forensic artefacts and hunts
 
 ---
 
 ## 8. Port Matrix
 
-| From                            | To                     | Proto/Port       | Purpose                       |
-| ------------------------------- | ---------------------- | ---------------- | ----------------------------- |
-| DC / PC1 (Wazuh Agent)          | Wazuh Manager          | TCP 1514         | Agent → Manager               |
-| Wazuh Manager (Filebeat)        | Logstash               | TCP 5044         | Beats → Logstash              |
-| JuiceShopClone (Filebeat)       | Logstash               | TCP 5044         | App logs → Logstash           |
-| Logstash                        | Splunk HEC (localhost) | HTTP 8088        | Wazuh + Juice logs → Splunk   |
-| OPNsense                        | Splunk                 | UDP 5514         | Suricata + Zenarmor syslog    |
-| Browser / Users                 | JuiceShopClone         | HTTP 3000        | Juice Shop web UI             |
-| PC1 / DC / PC2                  | FleetDM                | TCP 8412 (HTTPS) | Orbit/osquery TLS             |
-| PC1 / DC / PC2 / Juice / Splunk | Velociraptor           | TCP 8008 (HTTPS) | Velociraptor frontend         |
-| PC1 (Splunk UF)                 | Splunk                 | TCP 9997         | Universal Forwarder → Indexer |
+| From                            | To                     | Proto/Port       | Purpose                            |
+| ------------------------------- | ---------------------- | ---------------- | ---------------------------------- |
+| DC / PC1 (Wazuh Agent)          | Wazuh Manager          | TCP 1514         | Agent → Manager                    |
+| Wazuh Manager (Filebeat)        | Logstash               | TCP 5044         | Beats → Logstash                   |
+| JuiceShopClone (Filebeat)       | Logstash               | TCP 5044         | App logs → Logstash                |
+| Logstash                        | Splunk HEC (localhost) | HTTP 8088        | Wazuh + Juice logs → Splunk        |
+| OPNsense                        | Splunk                 | UDP 5514         | Suricata + Zenarmor syslog         |
+| Browser / Users                 | JuiceShopClone         | HTTP 3000        | Juice Shop web UI                  |
+| PC1 / DC / PC2                  | FleetDM                | TCP 8412 (HTTPS) | Orbit/osquery TLS                  |
+| PC1 / DC / PC2 / Juice / Splunk | Velociraptor           | TCP 8008 (HTTPS) | Velociraptor frontend / collectors |
+| PC1 (Splunk UF)                 | Splunk                 | TCP 9997         | Universal Forwarder → Indexer      |
 
 ---
 
@@ -292,24 +300,4 @@ Used for:
   `$SPLUNK_HOME/var/log/splunk/splunkd.log`
   `index=_internal sourcetype=splunkd component=HttpInput*`
 
----
-
-This file is the **authoritative blueprint** for the Karbonbike SOC Lab that Nexusnode operates.
-
-````
-
-3. Save the file.
-
----
-
-### Optional: commit this “Level 0” state
-
-If you’re happy with README + topology:
-
-```bash
-cd "E:\Projects\soc-lab-iac"
-git add README.md docs/lab-topology.md
-git commit -m "Add Nexusnode SOC lab README and topology"
-````
-
-
+```
